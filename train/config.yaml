@@ -1,19 +1,20 @@
 dataset:
   name: bbbc038-dsb2018
-  data_dir: ../data/dsb2018
-  image_size: 256
+  data_dir: ../data/BBBC038/stage1_train
+  image_size: 128
   val_split: 0.15
   test_split: 0.15
+  max_images: 300
 
 model:
   in_channels: 3
   out_channels: 1
-  base_filters: 32
+  base_filters: 16
 
 train:
-  batch_size: 16
-  epochs: 50
-  lr: 0.0003
+  batch_size: 8
+  epochs: 8
+  lr: 0.0005
   seed: 42
 
 wandb:

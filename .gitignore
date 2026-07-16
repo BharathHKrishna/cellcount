@@ -16,3 +16,9 @@ data/*
 # trained weights — track via DVC or release assets, not git
 models/*.pt
 models/*.pth
+
+# session / experiment artifacts
+.claude/
+train/wandb/
+*.log
+app/_last_measurements.csv

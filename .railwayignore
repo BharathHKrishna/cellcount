@@ -1,0 +1,21 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+.env
+.ipynb_checkpoints/
+node_modules/
+dist/
+build/
+.DS_Store
+.claude/
+.git/
+
+# huge, not needed at runtime
+data/
+train/wandb/
+*.log
+app/_last_measurements.csv
+notebooks/
+
+# models/*.pt is intentionally NOT ignored here -- the lite deploy needs unet_v1.pt
