@@ -1,0 +1,21 @@
+dataset:
+  name: bbbc038-dsb2018
+  data_dir: ../data/dsb2018
+  image_size: 256
+  val_split: 0.15
+  test_split: 0.15
+
+model:
+  in_channels: 3
+  out_channels: 1
+  base_filters: 32
+
+train:
+  batch_size: 16
+  epochs: 50
+  lr: 0.0003
+  seed: 42
+
+wandb:
+  project: cellcount
+  entity: null

@@ -1,0 +1,13 @@
+gradio
+fastapi
+uvicorn[standard]
+cellpose
+torch
+torchvision
+scikit-image
+opencv-python-headless
+numpy
+pillow
+pandas
+wandb
+pyyaml
