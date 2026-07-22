@@ -9,6 +9,7 @@ download) -- used for the public deploy, since Cellpose's SAM backbone
 needs ~1.2GB of RAM that free hosting tiers don't reliably provide.
 """
 
+import glob
 import os
 
 import gradio as gr
@@ -26,6 +27,7 @@ LITE_MODE = os.environ.get("CELLCOUNT_LITE") == "1"
 MODELS_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "models")
 UNET_WEIGHTS = os.path.join(MODELS_DIR, "unet_v1.pt")
 UNET_AVAILABLE = os.path.exists(UNET_WEIGHTS)
+EXAMPLES_DIR = os.path.join(os.path.dirname(__file__), "examples")
 
 MODEL_CHOICES = ["My U-Net"] if LITE_MODE else (
     ["Cellpose (pretrained)", "My U-Net"] if UNET_AVAILABLE else ["Cellpose (pretrained)"]
@@ -107,6 +109,11 @@ with gr.Blocks(title="CellCount") as demo:
         with gr.Row():
             with gr.Column():
                 image_input = gr.Image(type="numpy", label="Microscopy image")
+                gr.Examples(
+                    examples=[[p] for p in sorted(glob.glob(os.path.join(EXAMPLES_DIR, "*.png")))],
+                    inputs=[image_input],
+                    label="No image handy? Try one of these nuclei micrographs (BBBC038/DSB2018)",
+                )
                 model_choice = gr.Radio(MODEL_CHOICES, value=DEFAULT_MODEL, label="Model")
                 run_button = gr.Button("Segment", variant="primary")
             with gr.Column():
