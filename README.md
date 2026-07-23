@@ -50,11 +50,13 @@ Evaluated head-to-head on 15 held-out test images with [train/eval.py](./train/e
 
 ## Limitations
 
-- The U-Net was trained on a single held-out split of BBBC038 nuclei images and has not been validated on other tissue/cell types — it is not a generalist model the way Cellpose is.
-- Training used a deliberately modest budget (128x128 input, ~16 base filters, no augmentation) to keep training time reasonable on CPU, even though it now sees the full 670-image dataset. Accuracy would likely improve further with augmentation and a larger input resolution.
-- Densely overlapping or touching cells are the main failure mode for both models; the U-Net's watershed-based instance separation is still more sensitive to under/over-segmentation on crowded fields than Cellpose's learned flow fields, even after the fix above.
-- Low-contrast or unusually stained images (outside the DSB2018 distribution) degrade U-Net accuracy more than Cellpose, which was trained on a broader, more varied dataset.
-- The head-to-head eval used only 15 test images (not the full 45-image test split) since Cellpose's SAM backbone is slow on CPU — the comparison numbers should be read as indicative, not a tightly-powered benchmark.
+- **The U-Net misses some nuclei outright on certain images** — confirmed by a user against the live demo (a small crop with a mix of a textured/mottled clump and a smooth bright nucleus; the latter type went undetected). Retraining on the full dataset (see Metrics) improved held-out Dice/IoU substantially and was a good-faith attempt at this exact problem, but it was never confirmed against the original image — Gradio doesn't persist uploads server-side, so the report couldn't be directly reproduced or verified fixed. Treat "handles all nucleus appearances" as unproven; if you hit this, the most useful thing you can do is send the actual image file (not a screenshot) so it can be reproduced.
+- The U-Net was trained on BBBC038 nuclei only and has not been validated on other tissue/cell types — it is not a generalist model the way Cellpose is.
+- Training used a deliberately modest budget (128x128 input, ~16 base filters, no augmentation) to keep training time reasonable on CPU. Accuracy would likely improve further with augmentation, a larger input resolution, and more capacity.
+- Densely overlapping or touching cells are a failure mode for both models; the U-Net's watershed-based instance separation is more sensitive to under/over-segmentation on crowded fields than Cellpose's learned flow fields, even after fixing an earlier over-segmentation bug (see git history on `app/segment/postprocess.py`).
+- Low-contrast or unusually stained images (outside the DSB2018 distribution) degrade U-Net accuracy more than Cellpose, which was trained on a broader, more varied dataset — this is the likely underlying cause of the missed-nuclei issue above.
+- The head-to-head eval used only 15 test images (not the full 101-image test split) since Cellpose's SAM backbone is slow on CPU — the comparison numbers should be read as indicative, not a tightly-powered benchmark.
+- The U-Net beats Cellpose on Dice/IoU but loses on count MAE (see Metrics) — it's better at covering the right pixels than at getting the exact instance count right on every image.
 
 ## Datasets
 
