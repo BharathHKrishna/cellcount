@@ -18,7 +18,7 @@ See [CLAUDE.md](./CLAUDE.md) for the full project brief, model trade-offs, datas
 ## Status
 
 ✅ Weekend 1 — Cellpose baseline + Gradio demo.
-✅ Weekend 2 — U-Net trained on BBBC038/DSB2018 nuclei, logged to W&B (val Dice 0.867).
+✅ Weekend 2 — U-Net trained on BBBC038/DSB2018 nuclei, logged to W&B (val Dice 0.905).
 ✅ Weekend 3 — Pretrained-vs-My-U-Net comparison, per-cell measurements, CSV export.
 ✅ Weekend 4 — README, metrics, limitations, live deployment.
 
@@ -39,19 +39,19 @@ For the full Cellpose-vs-U-Net comparison, run locally: `python app.py` (Gradio)
 
 ## Metrics
 
-U-Net trained for 8 epochs on a 210/45/45 train/val/test split of a 300-image subset of BBBC038 stage-1 training images (image-level binary masks, 128x128), logged to Weights & Biases. Best checkpoint: val Dice 0.867 / val IoU 0.775 (epoch 7).
+U-Net trained for 18 epochs on a 469/100/101 train/val/test split of the full 670-image BBBC038 stage-1 training set (image-level binary masks, 128x128), logged to Weights & Biases. Best checkpoint: val Dice 0.905 / val IoU 0.838 (epoch 16).
 
 | Model | Dice | IoU | Count MAE |
 |---|---|---|---|
-| My U-Net | 0.789 | 0.694 | 2.47 |
+| My U-Net | 0.808 | 0.716 | 2.93 |
 | Cellpose (pretrained, generalist) | 0.783 | 0.687 | 2.47 |
 
-Evaluated head-to-head on 15 held-out test images with [train/eval.py](./train/eval.py) (sample size kept small — Cellpose's SAM backbone is slow on CPU). The U-Net edges out the Cellpose baseline here — a real result, but not one to over-read: it's 8 epochs on 300 images vs. a generalist foundation model, evaluated on a small sample, and an earlier version of the watershed instance-separation step had a real over-segmentation bug (fixed by adding minimum-size filtering and a per-blob fallback seed so small real nuclei aren't dropped — see [app/segment/postprocess.py](./app/segment/postprocess.py)) that inflated count error before this fix. Treat this as "competitive with a strong baseline on this dataset," not "beats Cellpose in general." W&B run: see `train/wandb/` (offline runs; sync with `wandb sync`).
+Evaluated head-to-head on 15 held-out test images with [train/eval.py](./train/eval.py) (sample size kept small — Cellpose's SAM backbone is slow on CPU). This is a real trade-off, not a clean win: the U-Net now beats the Cellpose baseline on Dice and IoU (better pixel-level mask quality — it covers more of the true foreground correctly), but is slightly behind on count MAE (it occasionally over- or under-splits touching nuclei by one or two, where Cellpose's learned flow fields are more consistent). An earlier, smaller training run (300 images, 8 epochs) was closer to Cellpose on count but weaker on Dice/IoU; this version was chosen because a nucleus going undetected entirely (a Dice/IoU problem) is a worse failure mode for this tool than an off-by-one instance count. Don't over-read either way: it's a from-scratch model trained in minutes on a laptop CPU vs. a generalist foundation model, evaluated on a small sample. W&B run: see `train/wandb/` (offline runs; sync with `wandb sync`).
 
 ## Limitations
 
 - The U-Net was trained on a single held-out split of BBBC038 nuclei images and has not been validated on other tissue/cell types — it is not a generalist model the way Cellpose is.
-- Training used a deliberately modest budget (300/670 available images, 128x128 input, 8 epochs, ~16 base filters) to keep training time reasonable on CPU. Accuracy would likely improve with the full dataset, longer training, augmentation, and a larger input resolution.
+- Training used a deliberately modest budget (128x128 input, ~16 base filters, no augmentation) to keep training time reasonable on CPU, even though it now sees the full 670-image dataset. Accuracy would likely improve further with augmentation and a larger input resolution.
 - Densely overlapping or touching cells are the main failure mode for both models; the U-Net's watershed-based instance separation is still more sensitive to under/over-segmentation on crowded fields than Cellpose's learned flow fields, even after the fix above.
 - Low-contrast or unusually stained images (outside the DSB2018 distribution) degrade U-Net accuracy more than Cellpose, which was trained on a broader, more varied dataset.
 - The head-to-head eval used only 15 test images (not the full 45-image test split) since Cellpose's SAM backbone is slow on CPU — the comparison numbers should be read as indicative, not a tightly-powered benchmark.

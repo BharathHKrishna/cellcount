@@ -4,7 +4,7 @@ dataset:
   image_size: 128
   val_split: 0.15
   test_split: 0.15
-  max_images: 300
+  max_images: null
 
 model:
   in_channels: 3
@@ -13,7 +13,7 @@ model:
 
 train:
   batch_size: 8
-  epochs: 8
+  epochs: 18
   lr: 0.0005
   seed: 42
 
